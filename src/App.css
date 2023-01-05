@@ -1,38 +1,120 @@
-.App {
-  text-align: center;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
+body {
+  padding: 16px;
+}
+
+.floor {
+  display: flex;
+  gap: 16px;
+  border-top: 1px solid lightgray;
+}
+
+.floor:last-child {
+  border-bottom: 1px solid lightgray;
+}
+
+.cell {
+  width: 128px;
+  height: 128px;
+  border-right: 2px solid lightgray;
+  border-left: 2px solid lightgray;
+}
+
+.elevators {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  bottom: 129px;
+  left: 2px;
   pointer-events: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.elevator {
+  width: 124px;
+  height: 129px;
+  background-color: cyan;
+  display: flex;
+  justify-content: center;
+  padding: 8px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.elevator__info {
+  border-radius: 4px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 4px 16px;
+  align-self: baseline;
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  font-weight: bold;
+}
+
+.call__box {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+}
+
+.button {
+  border-radius: 4px;
+  border: 2px solid #3d5a80;
+  width: 32px;
+  height: 32px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  cursor: pointer;
 }
 
-.App-link {
-  color: #61dafb;
+.button__inner {
+  border-radius: 50%;
+  border: 2px solid #3d5a80;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-@keyframes App-logo-spin {
+.button__dot {
+  background-color: #3d5a80;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.button:hover .button__inner,
+.button.active .button__inner {
+  border-color: #ff6933;
+}
+
+.button:hover .button__dot,
+.button.active .button__dot {
+  background-color: #ff6933;
+}
+
+.button.active {
+  border-color: #ff6933;
+}
+
+.opacity {
+  animation: Opacity 2s infinite backwards;
+}
+
+@keyframes Opacity {
   from {
-    transform: rotate(0deg);
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
   }
   to {
-    transform: rotate(360deg);
+    opacity: 0.2;
   }
 }
