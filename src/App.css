@@ -6,11 +6,21 @@
 
 body {
   padding: 16px;
+  overflow-x: auto;
 }
 
+:root {
+  --cellSize: 96px;
+}
+
+.floors {
+  width: max-content;
+  position: absolute;
+  margin-bottom: 100px;
+}
 .floor {
   display: flex;
-  gap: 16px;
+  gap: calc(var(--cellSize) / 8);
   border-top: 1px solid lightgray;
 }
 
@@ -19,35 +29,36 @@ body {
 }
 
 .cell {
-  width: 128px;
-  height: 128px;
+  min-width: var(--cellSize);
+  aspect-ratio: 1;
   border-right: 2px solid lightgray;
   border-left: 2px solid lightgray;
 }
 
 .elevators {
-  position: relative;
+  position: absolute;
   display: flex;
-  gap: 20px;
-  bottom: 129px;
+  gap: calc(var(--cellSize) / 8 + 4px);
+  bottom: 0;
   left: 2px;
   pointer-events: none;
 }
 
 .elevator {
-  width: 124px;
-  height: 129px;
+  min-width: calc(var(--cellSize) - 4px);
+  min-height: calc(var(--cellSize) + 1px);
   background-color: cyan;
   display: flex;
   justify-content: center;
-  padding: 8px;
+  padding: calc(var(--cellSize) / 8);
 }
 
 .elevator__info {
+  font-size: 14px;
   border-radius: 4px;
   color: white;
   background-color: rgba(0, 0, 0, 0.2);
-  padding: 4px 16px;
+  padding: 4px calc(var(--cellSize) / 8);
   align-self: baseline;
   display: flex;
   gap: 4px;
@@ -58,14 +69,15 @@ body {
 .call__box {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: calc(var(--cellSize) / 8);
+  padding-right: 64px;
 }
 
 .button {
   border-radius: 4px;
-  border: 2px solid #3d5a80;
-  width: 32px;
-  height: 32px;
+  border: 1px solid #3d5a80;
+  width: calc(var(--cellSize) / 4);
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,9 +86,9 @@ body {
 
 .button__inner {
   border-radius: 50%;
-  border: 2px solid #3d5a80;
-  width: 16px;
-  height: 16px;
+  border: 1px solid #3d5a80;
+  width: calc(var(--cellSize) / 8);
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,8 +96,8 @@ body {
 
 .button__dot {
   background-color: #3d5a80;
-  width: 8px;
-  height: 8px;
+  width: calc(var(--cellSize) / 16);
+  aspect-ratio: 1;
   border-radius: 50%;
 }
 
@@ -118,3 +130,27 @@ body {
     opacity: 0.2;
   }
 }
+
+/* @media (max-width: 1920px) {
+  :root {
+    --cellSize: 128px;
+  }
+} */
+
+/* @media (max-width: 1280px) {
+  :root {
+    --cellSize: 112px;
+  }
+} */
+
+/* @media (max-width: 1024px) {
+  :root {
+    --cellSize: 96px;
+  }
+} */
+
+/* @media (max-width: 768px) {
+  :root {
+    --cellSize: 78px;
+  }
+} */

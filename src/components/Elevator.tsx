@@ -25,7 +25,11 @@ const Elevator: FC<ElevatorProps> = ({ elevator }) => {
     >
       {!elevator.isAvailable && (
         <div className="elevator__info">
-          <span>{elevator.y < elevator.targetY ? "🡅" : "🡇"}</span>
+          <span>
+            {elevator.y !== elevator.targetY && elevator.y < elevator.targetY
+              ? "🡅"
+              : "🡇"}
+          </span>
           <span>{elevator.targetY}</span>
         </div>
       )}

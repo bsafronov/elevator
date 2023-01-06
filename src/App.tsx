@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import btnAudio from "./assets/btn_sound.mp3";
+import elevatorClose from "./assets/ElevatorClose.wav";
+import elevatorContinue from "./assets/ElevatorContinue.wav";
+import elevatorOpen from "./assets/ElevatorOpen.wav";
+import elevatorStart from "./assets/ElevatorStart.wav";
 import Elevator from "./components/Elevator";
 import Floor from "./components/Floor";
 import DB from "./configuration.json";
@@ -29,7 +34,7 @@ const App = () => {
       const floor: IFloor = {
         level: i,
         isWaiting: false,
-        managedBy: null,
+        isManaged: false,
       };
 
       floors.push(floor);
@@ -37,43 +42,40 @@ const App = () => {
 
     setElevators(elevators);
     setFloors(floors);
+    document
+      .querySelector(".elevators")
+      ?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   useEffect(() => {
-    const waitingFloor = floors.find(floor => floor.isWaiting);
-    const availableElevator = elevators.find(
-      item => item.isAvailable && item === waitingFloor?.managedBy
+    const waitingFloor = floors.find(
+      floor => floor.isWaiting && !floor.isManaged
     );
 
+    // const availableElevator = elevators.find(item => item.isAvailable);
+    if (!waitingFloor) return;
+
+    const availableElevator = searchFitElevator(waitingFloor.level);
+
     if (availableElevator && waitingFloor) {
-      moveElevator(availableElevator, waitingFloor);
+      controller(availableElevator, waitingFloor);
     }
   }, [floors, elevators]);
 
-  function callElevator(floor: IFloor) {
-    if (floor.isWaiting) return;
-
-    const elevatorsOnFloor = elevators.filter(item => item.y === floor.level);
-
-    if (elevatorsOnFloor.length > 0) return;
-
-    // Логика поиска подходящего лифта
-    const fitElevator = elevators[0];
-    //
-
-    const updatedFloors = floors.map(item => {
-      if (item === floor) {
-        item.isWaiting = true;
-        item.managedBy = fitElevator;
-      }
-
-      return item;
-    });
-
-    setFloors(updatedFloors);
+  async function controller(obj: IElevator, waitingFloor: IFloor) {
+    const sound = await moveElevator(obj, waitingFloor);
+    sound.pause();
+    await updateFloor(obj, waitingFloor);
+    updateElevator(obj);
   }
 
-  function moveElevator(obj: IElevator, waitingFloor: IFloor) {
+  async function moveElevator(obj: IElevator, waitingFloor: IFloor) {
+    new Audio(elevatorStart).play();
+    const elCont = new Audio(elevatorContinue);
+    elCont.loop = true;
+    elCont.play();
+
+    waitingFloor.isManaged = true;
     const updatedElevators = elevators.map(item => {
       if (item === obj) {
         item.isAvailable = false;
@@ -85,31 +87,43 @@ const App = () => {
     setElevators(updatedElevators);
 
     const timeInRoad = Math.abs(obj.targetY - obj.y) * 1000;
+    await new Promise(res => {
+      setTimeout(() => {
+        // new Audio(elevatorArrivedAudio).play();
+        new Audio(elevatorOpen).play();
+        res(true);
+      }, timeInRoad);
+    });
 
-    setTimeout(() => {
-      updateFloor(obj, waitingFloor);
-    }, timeInRoad);
+    return elCont;
   }
 
-  function updateFloor(obj: IElevator, waitingFloor: IFloor) {
+  async function updateFloor(obj: IElevator, waitingFloor: IFloor) {
     const updatedFloors = floors.map(item => {
       if (item === waitingFloor) {
         item.isWaiting = false;
-        item.managedBy = null;
+        item.isManaged = false;
       }
       return item;
     });
 
     obj.isResting = true;
-
-    setTimeout(() => {
-      updateElevator(obj);
-    }, 3000);
-
     setFloors(updatedFloors);
+    await new Promise(res => {
+      setTimeout(() => {
+        res(true);
+      }, 3000);
+    });
   }
 
-  function updateElevator(obj: IElevator) {
+  async function updateElevator(obj: IElevator) {
+    new Audio(elevatorClose).play();
+
+    await new Promise(res => {
+      setTimeout(() => {
+        res(true);
+      }, 1500);
+    });
     const updatedElevators = elevators.map(item => {
       if (item === obj) {
         item.isAvailable = true;
@@ -122,6 +136,48 @@ const App = () => {
     });
 
     setElevators(updatedElevators);
+    setFloors(floors);
+  }
+
+  function callElevator(floor: IFloor) {
+    if (floor.isWaiting) return;
+
+    const elevatorsOnFloor = elevators.filter(
+      item =>
+        (item.y === floor.level && item.isAvailable) ||
+        (item.targetY === floor.level && item.isResting)
+    );
+
+    if (elevatorsOnFloor.length > 0) return;
+
+    const audio = new Audio(btnAudio);
+    audio.play();
+
+    const updatedFloors = floors.map(item => {
+      if (item === floor) {
+        item.isWaiting = true;
+      }
+
+      return item;
+    });
+
+    setFloors(updatedFloors);
+  }
+
+  function searchFitElevator(level: number) {
+    const closestAvailableElevator = elevators
+      .filter(item => item.isAvailable && !item.isResting)
+      .sort((a, b) => Math.abs(level - a.y) - Math.abs(level - b.y))[0];
+
+    if (closestAvailableElevator) return closestAvailableElevator;
+
+    const avaiableElevator = elevators.find(
+      item => item.isAvailable && !item.isResting
+    );
+    if (avaiableElevator) {
+      return avaiableElevator;
+    }
+    return null;
   }
 
   return (
@@ -135,11 +191,11 @@ const App = () => {
             callElevator={callElevator}
           />
         ))}
-      </div>
-      <div className="elevators">
-        {elevators?.map((elevator, index) => (
-          <Elevator key={index} elevator={elevator} />
-        ))}
+        <div className="elevators">
+          {elevators?.map((elevator, index) => (
+            <Elevator key={index} elevator={elevator} />
+          ))}
+        </div>
       </div>
     </div>
   );
